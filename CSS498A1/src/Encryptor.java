@@ -7,11 +7,26 @@ import javax.crypto.Cipher;
 public class Encryptor {
 	enum CI_TYPES{AES128,AES256, DES, RSA;}
 	Cipher cipher;
+	OutputStream enc_out;
 	
-	public Encryptor(InputStream message, String password, String type) {
+	/**
+	 * Produces an Encryptor that 
+	 * @param out
+	 * @param type
+	 */
+	public Encryptor(OutputStream out, String type) {
 		
 	}
 	
+	public Encryptor(OutputStream out, String password, String type) {
+		cipherinit(type);
+		
+	}
+	
+	/**
+	 * Initializes the cipher to be used. TODO: password stuff?
+	 * @param type
+	 */
 	public void cipherinit(String type) {
 		try{
 			switch(CI_TYPES.valueOf(type)){
