@@ -1,16 +1,20 @@
 import java.io.*;
+import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
-import javax.crypto.Cipher;
+import javax.crypto.*;
+import javax.crypto.spec.*;
 
 
 public class Encryptor {
-	enum CI_TYPES{AES128,AES256, DES, RSA;}
+	enum CI_TYPES{AES, DES, RSA;}
 	Cipher cipher;
 	OutputStream enc_out;
 	
 	/**
-	 * Produces an Encryptor that 
+	 * Produces an Encryptor that uses a random key 
 	 * @param out
 	 * @param type
 	 */
@@ -18,19 +22,46 @@ public class Encryptor {
 		
 	}
 	
+	/**
+	 * Produces an Encryptor that uses a password as seed for the key
+	 * @param out
+	 * @param password
+	 * @param type
+	 */
 	public Encryptor(OutputStream out, String password, String type) {
-		cipherinit(type);
+		cipherinit(type, password);
+//		try {
+//			cipher.init(Cipher.ENCRYPT_MODE, generateKeyFromPass(password));
+//		} catch (InvalidKeyException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 	}
+	
+//	private SecretKey generateKeyFromPass(String password){
+//		SecretKey key = null;
+//		try {
+//        char[] chars = password.toCharArray();
+//         
+//        PBEKeySpec spec = new PBEKeySpec(chars);
+//        SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+//        key = skf.generateSecret(spec);
+//		} catch(Exception e) {
+//			System.err.println(e.getMessage());
+//			System.exit(1);
+//		}
+//		return key;
+//    }
 	
 	/**
 	 * Initializes the cipher to be used. TODO: password stuff?
 	 * @param type
 	 */
-	public void cipherinit(String type) {
+	public void cipherinit(String type, String pass) {
 		try{
 			switch(CI_TYPES.valueOf(type)){
-			case AES128:
+			case AES:
 				cipher = Cipher.getInstance("AES/CCB/PKCS5Padding");
 				break;
 			case DES:
