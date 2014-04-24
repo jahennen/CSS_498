@@ -30,35 +30,41 @@ public class Cryptor {
 		if (kf.isEmpty()) {
 			kf = "def"+type+"key.kf";
 		}
-		KeyGenerator kgen = null;
 		if (type.equals("AES")) {
-			try {
-				kgen = KeyGenerator.getInstance("AES");
-				kgen.init(128);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			Key k = genDefaultKey(type);
+			// TODO: write key to output file
+			if (k != null) {
+				
 			}
-			if (kgen != null) {
-				defaultKeys.put("AES", kgen.generateKey());
-				// TODO: write key to output file
-			}
-		} else if (type.equals("TDES")) {
-			try {
-				kgen = KeyGenerator.getInstance("DESede");
-				kgen.init(128);
-			} catch (NoSuchAlgorithmException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (kgen != null)
-				defaultKeys.put("AES", kgen.generateKey());
 		}
+		if (type.equals("DESede")) {
+			Key k = genDefaultKey(type);
+			// TODO: write key to output file
+			if (k != null) {
+				
+			}
+		}
+	}
+	
+	private SecretKey genDefaultKey(String type) {
+		KeyGenerator kgen = null;
+		try {
+			kgen = KeyGenerator.getInstance(type);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		SecretKey k = null;
+		if (kgen != null) {
+			k = kgen.generateKey();
+			defaultKeys.put("AES", k);
+		}
+		return k;
 	}
 	
 	public static String nextLine() {
 		String retval = inScan.nextLine();
-		if(inScan.equals("q") || inScan.equals("quit"))
+		if(retval.equals("q") || retval.equals("quit"))
 			System.exit(0);
 		return retval;
 	}
@@ -73,23 +79,27 @@ public class Cryptor {
 	
 	public static void main(String[] args) {
 		Cryptor cryptor = new Cryptor();
+		// Main menu
+		inScan = new Scanner(System.in);
 		while(true) {
 			System.out.println("Choose an option (q or quit to exit at any point):");
 			System.out.println("1. - Encrypt");
 			System.out.println("2. - Decrypt");
 			System.out.println("3. - Generate Key");
-			inScan = new Scanner(System.in);
 			String option = nextLine();
 			if (!validOpt(option)) {
 				continue;
 			}
 			int o = Integer.parseInt(option);
 			switch (o) {
+			// Encrypt
 			case 1:
 				cryptor.encrypt();
 				break;
+			// Decrypt
 			case 2:
 				break;
+			// Generate Key
 			case 3:
 				System.out.println("Choose a key type (q or quit to exit):");
 				System.out.println("1. - AES");
@@ -99,7 +109,7 @@ public class Cryptor {
 				if (!validOpt(option)) {
 					continue;
 				}
-				String[] types = {"AES", "TDES", "RSA"};
+				String[] types = {"AES", "DESede", "RSA"};
 				cryptor.genKey(types[Integer.parseInt(option)]);
 				break;
 			}
