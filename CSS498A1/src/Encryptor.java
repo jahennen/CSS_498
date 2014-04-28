@@ -9,9 +9,8 @@ import javax.crypto.spec.*;
 
 
 public class Encryptor {
-	enum CI_TYPES{AES, DES, RSA;}
 	Cipher cipher;
-	OutputStream enc_out;
+	CipherOutputStream enc_out;
 	
 	/**
 	 * Produces an Encryptor that uses a random key 

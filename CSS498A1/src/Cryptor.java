@@ -29,27 +29,57 @@ public class Cryptor {
 		if (k != null) {
 			Cipher c = null;
 			try {
+				FileInputStream inStream = new FileInputStream(in);
 				c = Cipher.getInstance(type);
 				c.init(Cipher.ENCRYPT_MODE,k);
 				System.out.println("c initalized");
 				System.out.println(c.toString());
 				CipherOutputStream outCipher = new CipherOutputStream(new FileOutputStream(out), c);
-			} catch (NoSuchAlgorithmException e) {
+				byte[] buf = new byte[1024];
+				int len;
+				while((len = inStream.read(buf))!=-1) {
+					outCipher.write(buf, 0, len);
+				}
+				outCipher.close();
+				inStream.close();
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InvalidKeyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			} 
 		}
 		keyStream.close();
 	}
 	
-	public void decrypt() {
-		
+	public void decrypt(String type, File keyFile, File in, File out) throws IOException {
+		FileInputStream keyStream = new FileInputStream(keyFile);
+		Key k = null;
+		byte[] encodedKey = new byte[keyStream.available()]; 
+		keyStream.read(encodedKey);
+		System.err.println(Arrays.toString(encodedKey));
+		k = new SecretKeySpec(encodedKey, 0, encodedKey.length, type);
+		if (k != null) {
+			Cipher c = null;
+			try {
+				FileOutputStream outStream = new FileOutputStream(out);
+				c = Cipher.getInstance(type);
+				c.init(Cipher.DECRYPT_MODE,k);
+				System.out.println("c initalized");
+				System.out.println(c.toString());
+				CipherInputStream inCipher = new CipherInputStream(new FileInputStream(in), c);
+				byte[] buf = new byte[1024];
+				int len;
+				while((len = inCipher.read(buf)) != -1) {
+					System.err.println(Arrays.toString(buf));
+					outStream.write(buf, 0, len);
+				}
+				inCipher.close();
+				outStream.close();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+		}
+		keyStream.close();
 	}
 	
 	public void genKey(String type, File keyFile) throws IOException {
@@ -68,6 +98,9 @@ public class Cryptor {
 				out.write(k.getEncoded());
 			}
 		}
+		if (type.equals("RSA")) {
+			
+		}
 		out.close();
 	}
 	
@@ -82,7 +115,6 @@ public class Cryptor {
 		SecretKey k = null;
 		if (kgen != null) {
 			k = kgen.generateKey();
-			defaultKeys.put("AES", k);
 		}
 		return k;
 	}
@@ -102,13 +134,33 @@ public class Cryptor {
 		return true;
 	}
 	
-	public static File getKeyFile(String type) {
+	public static File getKeyFile(String type){
 		System.out.println("Keyfile name (blank for default):");
 		String kf = inScan.nextLine();
 		if (kf.isEmpty()) {
 			kf = "def"+type+"key.kf";
 		}
+		
 		return new File(kf);
+	}
+	
+	public static File getInputFile(){
+		System.out.println("Input file name:");
+		String infile = inScan.nextLine();
+		File ret;
+		if (infile.isEmpty() || !(ret = new File(infile)).isFile()) {
+			return null; 
+		}
+		return ret;
+	}
+	
+	public static File getOutputFile() {
+		System.out.println("Output file name:");
+		String outfile = inScan.nextLine();
+		if (outfile.isEmpty()) {
+			return null;
+		}
+		return new File(outfile);
 	}
 	
 	public static String getAlgType() {
@@ -148,7 +200,17 @@ public class Cryptor {
 				System.out.println("Choose algorithm type:");
 				type = getAlgType();
 				try {
-					cryptor.encrypt(type, getKeyFile(type)//,getInputFile(),getOutputFile());
+					File infile, outfile = null;
+					if((infile = getInputFile()) == null) {
+						System.err.println("Missing input file/filename");
+						continue;
+					}
+					
+					if ((outfile = getOutputFile()) == null) {
+						System.err.println("Missing output filename");
+						continue;
+					}
+					cryptor.encrypt(type, getKeyFile(type) ,infile,outfile);
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -156,6 +218,24 @@ public class Cryptor {
 				break;
 			// Decrypt
 			case 2:
+				System.out.println("Choose algorithm type:");
+				type = getAlgType();
+				try {
+					File infile, outfile = null;
+					if((infile = getInputFile()) == null) {
+						System.err.println("Missing input file/filename");
+						continue;
+					}
+					
+					if ((outfile = getOutputFile()) == null) {
+						System.err.println("Missing output filename");
+						continue;
+					}
+					cryptor.decrypt(type, getKeyFile(type) ,infile,outfile);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				break;
 			// Generate Key
 			case 3:
