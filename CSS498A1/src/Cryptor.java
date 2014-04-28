@@ -98,8 +98,17 @@ public class Cryptor {
 				out.write(k.getEncoded());
 			}
 		}
+		out.close();
+	}
+	
+	public void genKeyPair(String type, File[] keyFiles) throws IOException {
+		FileOutputStream out = new FileOutputStream(keyFile);
 		if (type.equals("RSA")) {
-			
+			Key k = genDefaultKey(type);
+			// TODO: write key to output file
+			if (k != null) {
+				out.write(k.getEncoded());
+			}
 		}
 		out.close();
 	}
@@ -135,13 +144,29 @@ public class Cryptor {
 	}
 	
 	public static File getKeyFile(String type){
-		System.out.println("Keyfile name (blank for default):");
+		System.out.print("Keyfile name (blank for default): ");
 		String kf = inScan.nextLine();
 		if (kf.isEmpty()) {
 			kf = "def"+type+"key.kf";
 		}
-		
+		System.out.println("Keyfile is: " +kf);
 		return new File(kf);
+	}
+	
+	public static File[] getKeyPairFiles(String type) {
+		File[] kfs = new File[2];
+		System.out.print("Keyfile name (blank for default): ");
+		String kf = inScan.nextLine();
+		if (kf.isEmpty()) {
+			kfs[0] = new File("def"+type+"pubkey.kf");
+			kfs[1] = new File("def"+type+"privkey.kf");
+		} else {
+			kfs[0] = new File(kf+"pubkey.kf");
+			kfs[1] = new File(kf+"privkey.kf");
+		}
+		System.out.println("Keyfiles are: " + kfs[0] + " and " + kfs[1]);
+		return kfs;
+		
 	}
 	
 	public static File getInputFile(){
@@ -245,7 +270,11 @@ public class Cryptor {
 					continue;
 				}
 				try {
-					cryptor.genKey(type, getKeyFile(type));
+					if (type.equals("RSA")) {
+						cryptor.genKeyPair(type, getKeyPairFiles(type));
+					} else {
+						cryptor.genKey(type, getKeyFile(type));
+					}
 				} catch (NumberFormatException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
