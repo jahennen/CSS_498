@@ -111,6 +111,7 @@ public class Cryptor {
 			}
 		}
 		out.close();
+		//wtf why is this happening
 	}
 	
 	private SecretKey genDefaultKey(String type) {
